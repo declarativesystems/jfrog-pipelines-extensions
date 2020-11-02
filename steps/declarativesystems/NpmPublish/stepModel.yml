@@ -1,0 +1,19 @@
+configuration:
+  # artifactory used to resolve and publish build artifacts
+  sourceArtifactory:
+    type: String
+    validate:
+      notEmpty: true
+  # artifactory repo used to publish build artifacts
+  repositoryName:
+    type: String
+    validate:
+      notEmpty: true
+  # source code to build
+  sourceLocation:
+    type: String
+    validate:
+      notEmpty: true
+  # extra args for npm eg --verbose
+  npmArgs:
+    type: String

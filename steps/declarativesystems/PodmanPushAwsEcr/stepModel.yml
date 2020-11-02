@@ -1,0 +1,39 @@
+configuration:
+  # artifactory used to resolve and publish build artifacts
+  sourceArtifactory:
+    type: String
+    validate:
+      notEmpty: true
+
+  # aws key resource to use
+  awsKey:
+    type: String
+    validate:
+      notEmpty: true
+
+  awsRegion:
+    type: String
+    validate:
+      notEmpty: true
+
+  awsAccountId:
+    type: String
+    validate:
+      notEmpty: true
+
+  # image from artifactory to download and re-tag
+  artifactoryImage:
+    type: String
+    validate:
+      notEmpty: true
+
+  ecrImageName:
+    type: String
+    validate:
+      notEmpty: true
+
+  # tag to use for ECR
+  ecrImageTag:
+    type: String
+    validate:
+      notEmpty: true

@@ -1,0 +1,31 @@
+resources:
+  - name: MyGitHub
+    type: GitRepo
+    configuration:
+      path: declarativesystems/jfrog-pipelines-extensions    # <-- Change to your repository path
+      gitProvider: github                                    # <-- Change to your GitHub integration
+
+pipelines: 
+  - name: npm
+    steps:
+      - name: buildStepName
+        type: declarativesystems/NpmBuild
+        configuration:
+          sourceArtifactory: myArtifactory
+          sourceLocation: $res_MyGitHub_resourcePath
+          repositoryName: npm
+          buildCommand: make # optional
+          integrations:
+            - name: myArtifactory
+          inputResources:
+            - name: MyGitHub
+          npmArgs: "--verbose"
+      - name: npm publish
+        type: declarativesystems/NpmPublish
+        configuration:
+          sourceArtifactory: myArtifactory
+          repositoryName: npm-local
+          integrations:
+            - name: myArtifactory
+          inputSteps:
+            - name: buildStepName
