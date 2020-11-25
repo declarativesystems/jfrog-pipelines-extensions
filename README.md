@@ -12,13 +12,7 @@
 
 ## Docker Image
 
-* A single docker image can be built via `make image`  to cover most bases:
-    * AWS CLI v2
-    * Golang v1.15
-    * JFrog CLI
-    * NodeJS v15
-    * GoReleaser
-    * Podman
+See https://github.com/declarativesystems/jfrog-pipelines-image
 
 ## Pipeline Steps
 
