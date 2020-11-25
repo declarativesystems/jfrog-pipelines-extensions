@@ -10,12 +10,15 @@
 * PipInstall
 * PythonWheelDeploy
 
-## Docker Images
+## Docker Image
 
-* Quick and dirty adaptations of the public JFrog images!
-* Minimum needed to get up and running
-* Not recommended for production use
-
+* A single docker image can be built via `make image`  to cover most bases:
+    * AWS CLI v2
+    * Golang v1.15
+    * JFrog CLI
+    * NodeJS v15
+    * GoReleaser
+    * Podman
 
 ## Pipeline Steps
 
