@@ -179,6 +179,7 @@ password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
+
 # publish to artifactory
 # @param $1 the URL of the NPM repository
 # @param $2 extra npm args

@@ -178,7 +178,8 @@ username: ${rtUser}
 password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
-}awsCli() {
+}
+awsCli() {
   local status;
   # aws cli v2 setup
   local awsKey

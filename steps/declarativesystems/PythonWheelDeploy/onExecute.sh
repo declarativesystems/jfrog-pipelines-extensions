@@ -178,7 +178,8 @@ username: ${rtUser}
 password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
-}pythonWheelDeploy() {
+}
+pythonWheelDeploy() {
   local rtName
   rtName=$(find_step_configuration_value "sourceArtifactory")
   local rtUrl

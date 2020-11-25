@@ -178,7 +178,8 @@ username: ${rtUser}
 password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
-}goReleaserSnapshot() {
+}
+goReleaserSnapshot() {
   local status
   runCommandAgainstSource ".goreleaser.yml" "goreleaser --snapshot"
 

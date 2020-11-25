@@ -179,6 +179,7 @@ password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
+
 tagImageAndPush() {
   local awsRegion=$1
   local awsAccountId=$2

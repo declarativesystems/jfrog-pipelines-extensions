@@ -50,7 +50,8 @@ clean:
 
 test:
 	echo "=== bash syntax ==="
-	find . -iname '*.sh' -exec bash -n {} \;
+	bash -n lib/common.sh
+	find . -iname '*.sh' -print0 | xargs -0L1 bash -n
 
 	echo "=== yaml syntax ==="
 	./res/validate_yaml.py
