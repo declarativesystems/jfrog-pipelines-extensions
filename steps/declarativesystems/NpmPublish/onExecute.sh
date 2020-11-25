@@ -121,10 +121,10 @@ setupArtifactoryNpm() {
 }
 
 setupAwsCli() {
-  local awsRegion=$1
-  local awsAccessKeyId=$2
-  local awsSecretAccessKey=$3
-  local status
+  local rtUrl=$1
+  local rtUser=$2
+  local rtApikey=$3
+  local repositoryName=$4
 
   if [ -n "$awsRegion" ] && [ -n "$awsAccessKeyId" ] && [ -n "$awsSecretAccessKey" ] ; then
     echo "setting up AWS CLI for access key: ${awsAccessKeyId}..."
@@ -149,6 +149,36 @@ EOF
   return "$status"
 }
 
+setupArtifactoryPip() {
+  local rtUrl=$1
+  local rtUser=$2
+  local rtApikey=$3
+  local repositoryName=$4
+
+  mkdir -p ~/.pip
+  cat <<EOF > ~/.pip/pip.conf
+[global]
+index-url = https://${rtUser}:${rtApikey}@${rtUrl}/api/pypi/${repositoryName}/simple
+EOF
+  echo "[debug] pip configured to use artifactory repo:${repositoryName}"
+}
+
+setupArtifactoryPypirc() {
+  local rtUrl=$1
+  local rtUser=$2
+  local rtApikey=$3
+  local repositoryName=$4
+
+  cat <<EOF > ~/.pypirc
+[distutils]
+index-servers = local
+[local]
+repository: ${rtUrl}/api/pypi/${repositoryName}
+username: ${rtUser}
+password: ${rtApikey}
+EOF
+  echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
+}
 # publish to artifactory
 # @param $1 the URL of the NPM repository
 # @param $2 extra npm args

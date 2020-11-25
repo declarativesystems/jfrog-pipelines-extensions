@@ -1,4 +1,4 @@
-pipInstallMain() {
+pipInstall() {
   local rtName
   rtName=$(find_step_configuration_value "sourceArtifactory")
   local rtUrl
@@ -14,4 +14,4 @@ pipInstallMain() {
   runCommandAgainstSource "setup.py" "pip install ."
 }
 
-execute_command pipInstallMain
+execute_command pipInstall

@@ -1,4 +1,4 @@
-pythonWheelDeployMain() {
+pythonWheelDeploy() {
   local rtName
   rtName=$(find_step_configuration_value "sourceArtifactory")
   local rtUrl
@@ -14,4 +14,4 @@ pythonWheelDeployMain() {
   runCommandAgainstSource "setup.py" "python setup.py bdist_wheel upload -r local"
 }
 
-execute_command pythonWheelDeployMain
+execute_command pythonWheelDeploy

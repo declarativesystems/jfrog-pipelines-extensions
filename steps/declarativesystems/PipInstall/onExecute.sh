@@ -160,6 +160,7 @@ setupArtifactoryPip() {
 [global]
 index-url = https://${rtUser}:${rtApikey}@${rtUrl}/api/pypi/${repositoryName}/simple
 EOF
+  echo "[debug] pip configured to use artifactory repo:${repositoryName}"
 }
 
 setupArtifactoryPypirc() {
@@ -176,7 +177,8 @@ repository: ${rtUrl}/api/pypi/${repositoryName}
 username: ${rtUser}
 password: ${rtApikey}
 EOF
-}pipInstallMain() {
+  echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
+}pipInstall() {
   local rtName
   rtName=$(find_step_configuration_value "sourceArtifactory")
   local rtUrl
@@ -192,4 +194,4 @@ EOF
   runCommandAgainstSource "setup.py" "pip install ."
 }
 
-execute_command pipInstallMain
+execute_command pipInstall

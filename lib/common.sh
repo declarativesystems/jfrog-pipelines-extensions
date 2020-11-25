@@ -159,6 +159,7 @@ setupArtifactoryPip() {
 [global]
 index-url = https://${rtUser}:${rtApikey}@${rtUrl}/api/pypi/${repositoryName}/simple
 EOF
+  echo "[debug] pip configured to use artifactory repo:${repositoryName}"
 }
 
 setupArtifactoryPypirc() {
@@ -175,4 +176,5 @@ repository: ${rtUrl}/api/pypi/${repositoryName}
 username: ${rtUser}
 password: ${rtApikey}
 EOF
+  echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
