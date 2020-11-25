@@ -154,11 +154,13 @@ setupArtifactoryPip() {
   local rtUser=$2
   local rtApikey=$3
   local repositoryName=$4
+  # remove leading https://
+  local rtUrlStripped=$(echo "$rtUrl" | sed -r "s/http(s)?:\/\///")
 
   mkdir -p ~/.pip
   cat <<EOF > ~/.pip/pip.conf
 [global]
-index-url = https://${rtUser}:${rtApikey}@${rtUrl}/api/pypi/${repositoryName}/simple
+index-url = https://${rtUser}:${rtApikey}@${rtUrlStripped}/api/pypi/${repositoryName}/simple
 EOF
   echo "[debug] pip configured to use artifactory repo:${repositoryName}"
 }
