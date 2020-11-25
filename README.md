@@ -7,6 +7,8 @@
 * NpmBuild
 * NpmPublish
 * Release to AWS ECR
+* PipInstall
+* PythonWheelDeploy
 
 ## Docker Images
 
@@ -135,6 +137,46 @@
             - name: aws # grant access to integration
 
 ```
+
+### declarativesystems/PipInstall
+* Configure `pip` to use artifactory to resolve dependencies
+* Run `pip install .` against source code
+* Use affinity to let `PythonWheelDeploy` find files
+
+```yaml
+      - name: pipInstall
+        type: declarativesystems/PipInstall
+        configuration:
+          affinityGroup: python_env
+          sourceArtifactory: artifactory # name of artifactory integration to resolve dependencies from
+          repositoryName: pypi # repository to resolve dependencies from
+          sourceLocation: $res_someGitRepo_resourcePath # where to find sources to build
+          integrations:
+            - name: artifactory # grant access to integration
+          inputResources:
+            - name: someGitRepo # checkout code from git first
+```
+
+### declarativesystems/PythonWheelDeploy
+* Configure setuptools to use artifactory to publish build python wheel 
+  artefacts
+* Run `python setup.py bdist_wheel upload -r local` against source code
+* Use affinity to access files from previous `PipInstall` step
+
+```yaml
+      - name: pythonWheelDeploy
+        type: declarativesystems/PythonWheelDeploy
+        configuration:
+          affinityGroup: python_env
+          sourceArtifactory: artifactory # name of artifactory integration to publish artefacts to
+          repositoryName: pypi-local # repository to publish artefacts to
+          sourceLocation: $res_someGitRepo_resourcePath # where to find sources to build
+          integrations:
+            - name: artifactory # grant access to integration
+          inputResources:
+            - name: someGitRepo # code from git first
+```
+
 
 ## Building
 
