@@ -236,7 +236,7 @@ artifactoryDownload() {
     fi
 
     echo "downloading ${path} to ${target}"
-    jfrog rt download "$path" "$target"
+    jfrog rt download --flat "$path" "$target"
 
     if [ -f "$target" ] ; then
       local pipeline_variable
