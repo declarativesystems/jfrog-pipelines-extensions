@@ -225,12 +225,15 @@ artifactoryDownload() {
   path=$(find_step_configuration_value "path")
 
   local target
-  target=$(find_step_configuration_value "target") || basename "$path"
-    echo "  sourceArtifactory:${rtId}"
-    echo "  path:${path}"
-    echo "  target:${target}"
+  target=$(find_step_configuration_value "target")
+
   if [ -n "$rtId" ] && [ -n "$path" ]; then
     setupJfrogCliRt "$rtId"
+
+    if [ -n "$target" ] ; then
+      target=$(basename "$path")
+      echo "setting target:${target}"
+    fi
 
     echo "downloading ${path} to ${target}"
     jfrog rt download "$path" "$target"
