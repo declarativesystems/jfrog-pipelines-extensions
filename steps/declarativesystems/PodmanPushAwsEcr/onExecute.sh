@@ -30,15 +30,28 @@ runCommandAgainstSource() {
   return "$status"
 }
 
+# grab a bunch of artifactory settings and put in global scope to reduce code
+# duplication. You must call this method before accessing the variables it
+# exposes to be sure of a fresh set
+scopeArtifactoryVariables() {
+  local rtId=$1
+
+  rtUrl=$(eval echo "$"int_"$rtId"_url)
+  rtUser=$(eval echo "$"int_"$rtId"_user)
+  rtApikey=$(eval echo "$"int_"$rtId"_apikey)
+}
+
 # setup jfrog/artifactory CLI
 # working: setup ~/.jfrog and ping server
 # not working: jfrog rt npm-install
 setupJfrogCliRt() {
-  export CI=true
   local rtId=$1
-  local rtUrl=$2
-  local rtUser=$3
-  local rtApikey=$4
+  local rtUrl
+  local rtUser
+  local rtApikey
+  scopeArtifactoryVariables "$rtId"
+
+  export CI=true
   echo "Setup artifactory id:${rtId} url:${rtUrl} user:${rtUser} rtApikey:$([[ "$rtApikey" != "" ]] && echo "REDACTED")..."
   jfrog rt config --url "$rtUrl" --user "$rtUser" --apikey "$rtApikey" "$rtId"
 
@@ -49,16 +62,23 @@ setupJfrogCliRt() {
 # @param $1 the base URL of this artifactory
 # @param $2 repository name
 npmRegistryUrl() {
-  local rtUrl=$1
+  local rtId=$1
   local repositoryName=$2
 
+  local rtUrl
+  local rtUser
+  local rtApikey
+  scopeArtifactoryVariables "$rtId"
   echo "${rtUrl}/api/npm/${repositoryName}/"
 }
 
 setupArtifactoryPodman() {
-  local rtUrl=$1
-  local rtUser=$2
-  local rtApikey=$3
+  local rtId=$1
+
+  local rtUrl
+  local rtUser
+  local rtApikey
+  scopeArtifactoryVariables "$rtId"
   local status
 
   if [ -n "$rtUrl" ] && [ -n "$rtUser" ] && [ -n "$rtApikey" ] ; then
@@ -81,10 +101,14 @@ setupArtifactoryPodman() {
 # @param $3 artifactory apikey
 # @param $4 repository name
 setupArtifactoryNpm() {
-  local rtUrl=$1
-  local rtUser=$2
-  local rtApikey=$3
-  local repositoryName=$4
+  local rtId=$1
+  local repositoryName=$2
+
+  local rtUrl
+  local rtUser
+  local rtApikey
+  scopeArtifactoryVariables "$rtId"
+
 
   # magic URL that generates ~/.npmrc - this guy is the same no matter what
   # your repository is called and authorises you for all repos your account
@@ -121,10 +145,13 @@ setupArtifactoryNpm() {
 }
 
 setupAwsCli() {
-  local rtUrl=$1
-  local rtUser=$2
-  local rtApikey=$3
-  local repositoryName=$4
+  local awsKey=$1
+  local awsRegion=$2
+
+  local awsAccessKeyId
+  awsAccessKeyId=$(eval echo "$"int_"$awsKey"_accessKeyId)
+  local awsSecretAccessKey
+  awsSecretAccessKey=$(eval echo "$"int_"$awsKey"_secretAccessKey)
 
   if [ -n "$awsRegion" ] && [ -n "$awsAccessKeyId" ] && [ -n "$awsSecretAccessKey" ] ; then
     echo "setting up AWS CLI for access key: ${awsAccessKeyId}..."
@@ -150,12 +177,17 @@ EOF
 }
 
 setupArtifactoryPip() {
-  local rtUrl=$1
-  local rtUser=$2
-  local rtApikey=$3
-  local repositoryName=$4
+  local rtId=$1
+  local repositoryName=$2
+
+  local rtUrl
+  local rtUser
+  local rtApikey
+  scopeArtifactoryVariables "$rtId"
+
   # remove leading https://
-  local rtUrlStripped=$(echo "$rtUrl" | sed -r "s/http(s)?:\/\///")
+  local rtUrlStripped
+  rtUrlStripped=$(echo "$rtUrl" | sed -r "s/http(s)?:\/\///")
 
   mkdir -p ~/.pip
   cat <<EOF > ~/.pip/pip.conf
@@ -166,10 +198,13 @@ EOF
 }
 
 setupArtifactoryPypirc() {
-  local rtUrl=$1
-  local rtUser=$2
-  local rtApikey=$3
-  local repositoryName=$4
+  local rtId=$1
+  local repositoryName=$2
+
+  local rtUrl
+  local rtUser
+  local rtApikey
+  scopeArtifactoryVariables "$rtId"
 
   cat <<EOF > ~/.pypirc
 [distutils]
@@ -236,16 +271,10 @@ tagImageAndPush() {
 
 podmanPushAwsEcr() {
   # artifactory setup
-  local rtName
-  rtName=$(find_step_configuration_value "sourceArtifactory")
-  local rtUrl
-  rtUrl=$(eval echo "$"int_"$rtName"_url)
-  local rtUser
-  rtUser=$(eval echo "$"int_"$rtName"_user)
-  local rtApikey
-  rtApikey=$(eval echo "$"int_"$rtName"_apikey)
+  local rtId
+  rtId=$(find_step_configuration_value "sourceArtifactory")
 
-  setupArtifactoryPodman "$rtUrl" "$rtUser" "$rtApikey"
+  setupArtifactoryPodman "$rtId"
 
   # aws cli v2 setup
   local awsKey
@@ -255,11 +284,7 @@ podmanPushAwsEcr() {
   local awsAccountId
   awsAccountId=$(find_step_configuration_value "awsAccountId")
 
-  awsAccessKeyId=$(eval echo "$"int_"$awsKey"_accessKeyId)
-  awsSecretAccessKey=$(eval echo "$"int_"$awsKey"_secretAccessKey)
-  setupAwsCli "$awsRegion" "$awsAccessKeyId" "$awsSecretAccessKey"
-
-
+  setupAwsCli "$awsKey" "$awsRegion"
   tagImageAndPush "$awsRegion" "$awsAccountId"
 }
 

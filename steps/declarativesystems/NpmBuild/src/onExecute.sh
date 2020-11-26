@@ -24,14 +24,8 @@ npmBuildMain() {
   # grab a bunch of environment variables - since whole of pipelines is
   # basically a huge BASH script be extra careful and scope everything `local`
 
-  local rtName
-  rtName=$(find_step_configuration_value "sourceArtifactory")
-  local rtUrl
-  rtUrl=$(eval echo "$"int_"$rtName"_url)
-  local rtUser
-  rtUser=$(eval echo "$"int_"$rtName"_user)
-  local rtApikey
-  rtApikey=$(eval echo "$"int_"$rtName"_apikey)
+  local rtId
+  rtId=$(find_step_configuration_value "sourceArtifactory")
 
   # the unified repository for resolving all artifacts
   local repositoryName
@@ -40,7 +34,7 @@ npmBuildMain() {
   local npmArgs
   npmArgs=$(find_step_configuration_value "npmArgs")
 
-  setupArtifactoryNpm "$rtUrl" "$rtUser" "$rtApikey" "$repositoryName"
+  setupArtifactoryNpm "$rtId" "$repositoryName"
   runCommandAgainstSource "package.json" "npmInstall && npmBuild && saveFilesForNextStep"
 }
 

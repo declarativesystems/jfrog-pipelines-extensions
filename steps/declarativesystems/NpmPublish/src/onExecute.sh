@@ -30,14 +30,8 @@ npmPublish() {
 
 npmPublishMain() {
   # artifactory server for resolve & deploy
-  local rtName
-  rtName=$(find_step_configuration_value "sourceArtifactory")
-  local rtUrl
-  rtUrl=$(eval echo "$"int_"$rtName"_url)
-  local rtUser
-  rtUser=$(eval echo "$"int_"$rtName"_user)
-  local rtApikey
-  rtApikey=$(eval echo "$"int_"$rtName"_apikey)
+  local rtId
+  rtId=$(find_step_configuration_value "sourceArtifactory")
 
   # repository for artifact publishing
   local repositoryName
@@ -47,12 +41,12 @@ npmPublishMain() {
   npmArgs=$(find_step_configuration_value "npmArgs")
 
   local rtNpmUrl
-  rtNpmUrl=$(npmRegistryUrl "$rtUrl" "$repositoryName")
+  rtNpmUrl=$(npmRegistryUrl "$rtId" "$repositoryName")
 
   mkdir buildhere
   pushd buildhere || return 255
 
-  setupArtifactoryNpm "$rtUrl" "$rtUser" "$rtApikey" "$repositoryName"
+  setupArtifactoryNpm "$rtId" "$repositoryName"
   restore_run_files intermediateBuildDir intermediateBuildDir
 
   runCommandAgainstSource "package.json" "npmPublish ${rtNpmUrl} ${npmArgs}"

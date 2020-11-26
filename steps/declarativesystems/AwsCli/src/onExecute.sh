@@ -8,9 +8,7 @@ awsCli() {
   local awsAccountId
   awsAccountId=$(find_step_configuration_value "awsAccountId")
 
-  awsAccessKeyId=$(eval echo "$"int_"$awsKey"_accessKeyId)
-  awsSecretAccessKey=$(eval echo "$"int_"$awsKey"_secretAccessKey)
-  setupAwsCli "$awsRegion" "$awsAccessKeyId" "$awsSecretAccessKey"
+  setupAwsCli "$awsKey" "$awsRegion"
 
   local commandsLen
   commandsLen=$(eval echo "$"step_configuration_commands_len)
@@ -48,4 +46,5 @@ awsCli() {
   fi
   return "$status"
 }
+
 execute_command awsCli

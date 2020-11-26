@@ -1,5 +1,6 @@
 # JFrog Pipelines Extensions
 
+* Artifactory Download
 * GoLang 1.15.3 
 * NodeJS v15
 * AWS CLI v2
@@ -16,7 +17,54 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 
 ## Pipeline Steps
 
-### declarativesystems/awscli
+### declarativesystems/ArtifactoryDownload
+
+* Download **one** file from Artifactory
+* Variables allowed
+* Usually you want to use a 
+  [FileSpec resource](https://www.jfrog.com/confluence/display/JFROG/FileSpec)
+  not this extension step
+* A limitation of the `FileSpec` resource is that since resources are available
+  to all pipelines, you can't use variables, eg:
+  
+```yaml
+  resources:
+    - name: somelibFileSpec
+      type: FileSpec
+      configuration:
+        sourceArtifactory: artifactory
+
+        # impossible, and doesn't make sense either:
+        # pattern: somerepo/somelib/${version}/somelib-${version}.jar
+        
+        # works, but the hardcoded version can be a problem:
+        pattern: somerepo/somelib/0.0.1/somelib-0.0.1.jar
+```
+
+**Example**
+
+```yaml
+      - name: artifactoryDownload
+        type: declarativesystems/ArtifactoryDownload
+        configuration:
+          affinityGroup: somegroup
+          sourceArtifactory: artifactory
+          # 2 - you can access it here
+          path: somerepo/somelib/${somelibVersion}/somelib-${somelibVersion}.jar
+          integrations:
+            - name: artifactory
+        execution:
+          onStart:        
+            - cd /some/source/code
+            # 1 - create a variable like this or use an existing one
+            - add_pipeline_variables somelibVersion=$(make print_somelib_version)
+```
+
+* Use `affinityGroup` to let next step access the downloaded file
+* After the step runs, the path to the downloaded file is available in 
+  `$res_<resource_name>_resourcePath`
+  
+### declarativesystems/AwsCli
 
 * Run an AWS CLI v2 command from your pipeline
 * Credentials stored securely in AWS Pipeline integration
@@ -138,7 +186,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 ### declarativesystems/PipInstall
 * Configure `pip` to use artifactory to resolve dependencies
 * Run `pip install .` against source code
-* Use affinity to let `PythonWheelDeploy` find files
+* Use `affinityGroup` to let `PythonWheelDeploy` find files
 
 ```yaml
       - name: pipInstall
@@ -158,7 +206,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 * Configure setuptools to use artifactory to publish build python wheel 
   artefacts
 * Run `python setup.py bdist_wheel upload -r local` against source code
-* Use affinity to access files from previous `PipInstall` step
+* Use `affinityGroup` to access files from previous `PipInstall` step
 
 ```yaml
       - name: pythonWheelDeploy

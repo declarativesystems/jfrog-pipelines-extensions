@@ -53,16 +53,10 @@ tagImageAndPush() {
 
 podmanPushAwsEcr() {
   # artifactory setup
-  local rtName
-  rtName=$(find_step_configuration_value "sourceArtifactory")
-  local rtUrl
-  rtUrl=$(eval echo "$"int_"$rtName"_url)
-  local rtUser
-  rtUser=$(eval echo "$"int_"$rtName"_user)
-  local rtApikey
-  rtApikey=$(eval echo "$"int_"$rtName"_apikey)
+  local rtId
+  rtId=$(find_step_configuration_value "sourceArtifactory")
 
-  setupArtifactoryPodman "$rtUrl" "$rtUser" "$rtApikey"
+  setupArtifactoryPodman "$rtId"
 
   # aws cli v2 setup
   local awsKey
@@ -72,11 +66,7 @@ podmanPushAwsEcr() {
   local awsAccountId
   awsAccountId=$(find_step_configuration_value "awsAccountId")
 
-  awsAccessKeyId=$(eval echo "$"int_"$awsKey"_accessKeyId)
-  awsSecretAccessKey=$(eval echo "$"int_"$awsKey"_secretAccessKey)
-  setupAwsCli "$awsRegion" "$awsAccessKeyId" "$awsSecretAccessKey"
-
-
+  setupAwsCli "$awsKey" "$awsRegion"
   tagImageAndPush "$awsRegion" "$awsAccountId"
 }
 
