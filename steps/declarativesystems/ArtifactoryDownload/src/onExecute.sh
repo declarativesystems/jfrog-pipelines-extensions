@@ -8,17 +8,25 @@ artifactoryDownload() {
 
   local target
   target=$(find_step_configuration_value "target") || basename "$path"
-
+    echo "  sourceArtifactory:${rtId}"
+    echo "  path:${path}"
+    echo "  target:${target}"
   if [ -n "$rtId" ] && [ -n "$path" ]; then
     setupJfrogCliRt "$rtId"
 
     echo "downloading ${path} to ${target}"
     jfrog rt download "$path" "$target"
 
-    local pipeline_variable
-    pipeline_variable="res_${step_name}_resourcePath=$(pwd)/${target}"
-    echo "adding pipeline variable: ${pipeline_variable}"
-    add_pipeline_variables "res_${step_name}_resourcePath=$(pwd)/${target}"
+    if [ -f "$target" ] ; then
+      local pipeline_variable
+      pipeline_variable="res_${step_name}_resourcePath=$(pwd)/${target}"
+      echo "adding pipeline variable: ${pipeline_variable}"
+      add_pipeline_variables "res_${step_name}_resourcePath=$(pwd)/${target}"
+      status=0
+    else
+      echo "jfrog rt download succeeded but no file was downloaded to target:${target}"
+      status=1
+    fi
   else
     echo "one or more parameters missing:"
     echo "  sourceArtifactory:${rtId}"
