@@ -114,7 +114,7 @@ setupArtifactoryNpm() {
   # has access to
   local rtNpmAuthUrl="${rtUrl}/api/npm/auth"
   local rtNpmUrl
-  rtNpmUrl=$(npmRegistryUrl "$rtUrl" "$repositoryName")
+  rtNpmUrl=$(npmRegistryUrl "$rtId" "$repositoryName")
 
   local status
   echo "Setup npm url:${rtUrl} user:${rtUser} rtApikey:$([[ "$rtApikey" != "" ]] && echo "REDACTED")..."
