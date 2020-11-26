@@ -230,7 +230,7 @@ artifactoryDownload() {
   if [ -n "$rtId" ] && [ -n "$path" ]; then
     setupJfrogCliRt "$rtId"
 
-    if [ -n "$target" ] ; then
+    if [ -z "$target" ] ; then
       target=$(basename "$path")
       echo "setting target:${target}"
     fi
