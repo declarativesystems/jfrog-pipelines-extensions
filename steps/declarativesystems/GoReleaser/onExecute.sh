@@ -246,7 +246,7 @@ goReleaserMain() {
 
 
   # GoReleaser
-  if [ -n "$rtId" ] && [ -n "$buildName" ] && [ -n "$buildNumber" ] ; then
+  if [ -n "$rtId" ] && [ -n "$repositoryName" ] && [ -n "$buildName" ] && [ -n "$buildNumber" ] ; then
     # GAH https://github.com/goreleaser/goreleaser/pull/1825 prevents us
     # publishing snapshot to artifactory so build them with `goreleaser`
     # and then upload to a generic repository
@@ -259,7 +259,7 @@ goReleaserMain() {
     # todo - resolve build artifacts from artifactory
     if setupJfrogCliRt "$rtId" ; then
       echo "building tarball with goreleaser..."
-      runCommandAgainstSource ".goreleaser.yml" "goreleaser --snapshot" && goRtPublish "$rtId" "$buildName" "$buildNumber"
+      runCommandAgainstSource ".goreleaser.yml" "goreleaser --snapshot" && goRtPublish "$repositoryName" "$buildName" "$buildNumber"
       status=$?
     fi
   else
