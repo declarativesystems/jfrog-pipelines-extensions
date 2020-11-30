@@ -244,7 +244,7 @@ awsCli() {
       if [ -n "$command" ] ; then
         commandInterpolated=$(eval echo "$command")
         echo "running command: ${commandInterpolated}"
-        eval $commandInterpolated
+        eval echo "$commandInterpolated"
         status=$?
 
         if $command ; then
