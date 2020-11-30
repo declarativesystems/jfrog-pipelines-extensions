@@ -242,7 +242,6 @@ awsCli() {
       command=$(eval echo "$"step_configuration_commands_${i})
 
       if [ -n "$command" ] ; then
-        set -x
         commandInterpolated=$(eval echo "$command")
         echo "running command: ${commandInterpolated}"
 
