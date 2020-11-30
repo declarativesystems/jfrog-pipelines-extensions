@@ -223,9 +223,10 @@ goRtPublish() {
   local status
   echo "publishing ${buildName}:${buildNumber} to artifactory repository ${repositoryName}..."
   runCommandAgainstSource ".goreleaser.yml" \
-    "jfrog rt upload dist/*.tar.gz ${repositoryName}/${buildName}/ \
+    "jfrog rt upload \
+    --build-number ${buildNumber} \
     --build-name ${buildName} \
-    --build-number ${buildNumber}"
+    dist/*.tar.gz ${repositoryName}/${buildName}/"
   status=$?
   echo "status: $status"
 
