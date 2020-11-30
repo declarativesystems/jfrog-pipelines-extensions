@@ -25,7 +25,7 @@ awsCli() {
 
       if [ -n "$command" ] ; then
         echo "running command: ${command}"
-        $command
+        eval $command
         status=$?
 
         if $command ; then
