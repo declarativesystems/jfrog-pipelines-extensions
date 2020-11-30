@@ -245,11 +245,10 @@ awsCli() {
         set -x
         commandInterpolated=$(eval echo "$command")
         echo "running command: ${commandInterpolated}"
-        eval $(eval echo $commandInterpolated)
-        status=$?
 
-        if $command ; then
+        if $commandInterpolated ; then
           echo "OK"
+          status=0
         else
           echo "FAILED!"
           status=1
