@@ -1,7 +1,7 @@
-# run a command inside `$sourceLocation` (configuration/sourceLocation) or
-# current directory if sourceLocation not set
-# @param $1 file to look for inside source directory (eg package.json) - this is
-#   so we know we are in the right directory and are not lost
+# run a command inside `$sourceLocation` (configuration/sourceLocation) if set
+# otherwise just use the current directory
+# @param $1 file to look for (eg `package.json`) which means we are in the right
+#   directory and not lost
 # @param $2 command to run
 runCommandAgainstSource() {
   local markerFile=$1
@@ -12,16 +12,25 @@ runCommandAgainstSource() {
   sourceLocationVar=$(find_step_configuration_value "sourceLocation")
   local sourceLocation
   sourceLocation=$(eval echo "$sourceLocationVar")
-  echo "checking ${sourceLocation} for ${markerFile}"
-  if [ -f "${sourceLocation}/${markerFile}" ]; then
+
+  if [ -n "$sourceLocation" ] ; then
+    pushd "$sourceLocation" || echo "no such directory: ${sourceLocation}" ; return 1
+  fi
+
+  if [ -f "${markerFile}" ]; then
     echo "[debug] ${commandToRun}"
     pushd "$sourceLocation" && eval "$commandToRun"
     status=$?
-  else
-    echo "no ${markerFile} in ${sourceLocation}, found:"
+  elses
+    echo "no ${markerFile} in $(pwd), found:"
     tree -L 1
     status=1
   fi
+
+  if [ -n "$sourceLocation" ] ; then
+    popd || echo "failed to return to previous directory!" ; return 1
+  fi
+
 
   return "$status"
 }
