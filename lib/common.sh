@@ -14,6 +14,7 @@ runCommandAgainstSource() {
   sourceLocation=$(eval echo "$sourceLocationVar")
 
   if [ -n "$sourceLocation" ] ; then
+    echo "entering sourceLocation: ${sourceLocation}"
     pushd "$sourceLocation" || echo "no such directory: ${sourceLocation}" ; return 1
   fi
 
@@ -21,13 +22,14 @@ runCommandAgainstSource() {
     echo "[debug] ${commandToRun}"
     pushd "$sourceLocation" && eval "$commandToRun"
     status=$?
-  elses
+  else
     echo "no ${markerFile} in $(pwd), found:"
     tree -L 1
     status=1
   fi
 
   if [ -n "$sourceLocation" ] ; then
+    echo "leaving sourceLocation..."
     popd || echo "failed to return to previous directory!" ; return 1
   fi
 
