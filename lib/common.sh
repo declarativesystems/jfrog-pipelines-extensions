@@ -1,6 +1,7 @@
 # run a command inside `$sourceLocation` (configuration/sourceLocation) or
-# `intermediateBuildDir` if sourceLocation not set
-# @param $1 file to look for inside source directory (eg package.json)
+# current directory if sourceLocation not set
+# @param $1 file to look for inside source directory (eg package.json) - this is
+#   so we know we are in the right directory and are not lost
 # @param $2 command to run
 runCommandAgainstSource() {
   local markerFile=$1
@@ -9,10 +10,6 @@ runCommandAgainstSource() {
   # pipelines.yml $variables need to be eval'ed to read the value
   local sourceLocationVar
   sourceLocationVar=$(find_step_configuration_value "sourceLocation")
-  if [ "$sourceLocationVar" == "" ]; then
-    # fallback to intermediateBuildDir
-    sourceLocationVar="intermediateBuildDir"
-  fi
   local sourceLocation
   sourceLocation=$(eval echo "$sourceLocationVar")
   echo "checking ${sourceLocation} for ${markerFile}"
@@ -21,7 +18,7 @@ runCommandAgainstSource() {
     pushd "$sourceLocation" && eval "$commandToRun"
     status=$?
   else
-    echo "no ${markerFile} in sourceLocation - current directory:"
+    echo "no ${markerFile} in ${sourceLocation}, found:"
     tree -L 1
     status=1
   fi
