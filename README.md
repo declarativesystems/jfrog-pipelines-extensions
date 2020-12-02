@@ -1,6 +1,7 @@
 # JFrog Pipelines Extensions
 
 * Artifactory Download
+* Artifactory Upload
 * GoLang 1.15.3 
 * NodeJS v15
 * AWS CLI v2
@@ -50,7 +51,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
           affinityGroup: somegroup
           sourceArtifactory: artifactory
           # 2 - you can access it here
-          path: somerepo/somelib/${somelibVersion}/somelib-${somelibVersion}.jar
+          path: somerepo/somelib/${somelibVersion}/somelib-${somelibVersion}.js
           integrations:
             - name: artifactory
         execution:
@@ -63,6 +64,29 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 * Use `affinityGroup` to let next step access the downloaded file
 * After the step runs, the path to the downloaded file is available in 
   `$res_<resource_name>_resourcePath`
+  
+### declarativesystems/ArtifactoryUpload
+
+* Same rationale as ArtifactoryDownload
+
+```yaml
+      - name: artifactoryUpload
+        type: declarativesystems/ArtifactoryUpload
+        configuration:
+          affinityGroup: somegroup
+          sourceArtifactory: artifactory
+          # 2 - you can access it here
+          target: build/somelib-${somelibVersion.js}
+          path: somerepo/somelib/${somelibVersion}/somelib-${somelibVersion}.js
+          integrations:
+            - name: artifactory
+        execution:
+          onStart:        
+            - cd /some/source/code
+            # 1 - create a variable like this or use an existing one
+            - add_pipeline_variables somelibVersion=$(make print_somelib_version)
+```
+
   
 ### declarativesystems/AwsCli
 
