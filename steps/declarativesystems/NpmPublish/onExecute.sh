@@ -261,12 +261,7 @@ npmPublishMain() {
   local rtNpmUrl
   rtNpmUrl=$(npmRegistryUrl "$rtId" "$repositoryName")
 
-  mkdir buildhere
-  pushd buildhere || return 255
-
   setupArtifactoryNpm "$rtId" "$repositoryName"
-  restore_run_files intermediateBuildDir intermediateBuildDir
-
   runCommandAgainstSource "package.json" "npmPublish ${rtNpmUrl} ${npmArgs}"
 }
 

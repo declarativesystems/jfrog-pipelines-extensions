@@ -140,7 +140,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 * Uses `npm install` configured for `sourceArtifactory` vs \
   `jfrog rt npm-install`
 * Build using `npm build` (or `buildCommand`)
-* Build output saved for next step to use via `add_run_files`
+* Build output made available to next step via `affinityGroup`
 
 **Example**
 
@@ -148,6 +148,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
       - name: build
         type: declarativesystems/NpmBuild
         configuration:
+          affinityGroup: npm
           sourceArtifactory: artifactory # name of artifactory integration to source dependencies from
           sourceLocation: $res_someGitRepo_resourcePath # where to find sources to build
           repositoryName: npm # repository to source dependencies from
@@ -163,6 +164,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 * Drop-in replacement for native NpmPublish to easily publish builds created
   with `declarativesystems/NpmBuild`
 * Publishes build to Artifactory with `npm publish --registry`
+* Obtains build via `affinityGroup`
 
 **Example**
 
@@ -170,6 +172,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
       - name: publish
         type: declarativesystems/NpmPublish
         configuration:
+          affinityGroup: npm
           sourceArtifactory: artifactory # name of artifactory integration to publish dependencies to
           repositoryName: npm-local # repository to publish dependencies to
           integrations:

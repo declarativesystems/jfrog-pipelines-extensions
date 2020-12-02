@@ -14,12 +14,6 @@ npmBuild() {
   $buildCommand
 }
 
-saveFilesForNextStep() {
-  # built-in utility function to make files available to next stage
-  # https://www.jfrog.com/confluence/display/JFROG/Creating+Stateful+Pipelines
-  add_run_files . "intermediateBuildDir"
-}
-
 npmBuildMain() {
   # grab a bunch of environment variables - since whole of pipelines is
   # basically a huge BASH script be extra careful and scope everything `local`
@@ -35,7 +29,7 @@ npmBuildMain() {
   npmArgs=$(find_step_configuration_value "npmArgs")
 
   setupArtifactoryNpm "$rtId" "$repositoryName"
-  runCommandAgainstSource "package.json" "npmInstall && npmBuild && saveFilesForNextStep"
+  runCommandAgainstSource "package.json" "npmInstall && npmBuild"
 }
 
 execute_command npmBuildMain
