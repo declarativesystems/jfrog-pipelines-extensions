@@ -15,7 +15,7 @@ runCommandAgainstSource() {
 
   if [ -n "$sourceLocation" ] ; then
     echo "entering sourceLocation: ${sourceLocation}"
-    pushd "$sourceLocation" || echo "no such directory: ${sourceLocation}" ; return 1
+    pushd "$sourceLocation" || ( echo "no such directory: ${sourceLocation}" ; return 1 )
   fi
 
   if [ -f "${markerFile}" ]; then
@@ -30,7 +30,7 @@ runCommandAgainstSource() {
 
   if [ -n "$sourceLocation" ] ; then
     echo "leaving sourceLocation..."
-    popd || echo "failed to return to previous directory!" ; return 1
+    popd || ( echo "failed to return to previous directory!" ; return 1 )
   fi
 
 
