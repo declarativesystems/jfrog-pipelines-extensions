@@ -31,7 +31,7 @@ distributeArtifact() {
 
     apiDistribute="${rtUrl}/api/distribute"
     echo "distribute Artifactory server: ${apiPing}"
-    curl -H"Authorization: Bearer ${rtApikey}" -X POST "${apiDistribute}" \
+    curl -u"${rtUser}:${rtApikey}" -X POST "${apiDistribute}" \
       --data "{\"targetRepo\" : \"${repositoryName}\",
         \"packagesRepoPaths\" : [\"${path}\"]}"
 
