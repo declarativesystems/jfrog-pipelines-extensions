@@ -1,0 +1,16 @@
+configuration:
+  # artifactory used to resolve and publish build artifacts
+  sourceArtifactory:
+    type: String
+    validate:
+      notEmpty: true
+  # artifactory repo used to resolve build artifacts
+  repositoryName:
+    type: String
+    validate:
+      notEmpty: true
+  # path to publish
+  path:
+    type: String
+    validate:
+      notEmpty: true

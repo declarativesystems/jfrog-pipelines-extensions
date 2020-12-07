@@ -96,7 +96,7 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 **Example**
 
 ```yaml
-      - name: restartEcs
+      - name: redeployImageToEcs
         type: declarativesystems/AwsCli
         configuration:
           awsKey: "aws" # name of AWS integration
@@ -108,6 +108,22 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
           integrations:
             - name: aws # grant access integration
 ```
+
+### declarativesystems/DistributeArtifact
+
+* Publish a single artifact to bintray
+
+```yaml
+      - name: distributeToTestBintrayRepo
+        type: declarativesystems/DistrubteArtifact
+        configuration:
+          sourceArtifactory: "artifactory" # Artifactory instance to use
+          repositoryName: "test" # Name of the *distribution* repository
+          path: "generic-local/somelib/somelib-1.2.3.js" # artifact to publish
+          integrations:
+            - name: artifactory
+```
+
 
 ### declarativesystems/GoReleaser
 
