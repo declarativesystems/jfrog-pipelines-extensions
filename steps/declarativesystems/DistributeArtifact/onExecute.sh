@@ -250,13 +250,8 @@ distributeArtifact() {
     scopeArtifactoryVariables "$rtId"
 #    access_token=$(jfrog rt access-token-create|jq .access_token)
 
-    # test ping first...
-    apiPing="${rtUrl}/router/api/v1/system/ping"
-    echo "ping Artifactory server: ${apiPing}"
-    curl --fail -u"${rtUser}:${rtApikey}" "${apiPing}"
-
     apiDistribute="${rtUrl}/api/distribute"
-    echo "distribute Artifactory server: ${apiPing}"
+    echo "distribute Artifactory server: ${apiDistribute}"
     curl --fail -u"${rtUser}:${rtApikey}" -X POST "${apiDistribute}" \
       --data "{\"targetRepo\" : \"${repositoryName}\",
         \"packagesRepoPaths\" : [\"${path}\"]}"
