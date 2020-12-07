@@ -253,11 +253,11 @@ distributeArtifact() {
     # test ping first...
     apiPing="${rtUrl}/router/api/v1/system/ping"
     echo "ping Artifactory server: ${apiPing}"
-    curl -H"Authorization: Bearer ${rtApikey}" "${apiPing}"
+    curl --fail -u"${rtUser}:${rtApikey}" "${apiPing}"
 
     apiDistribute="${rtUrl}/api/distribute"
     echo "distribute Artifactory server: ${apiPing}"
-    curl -u"${rtUser}:${rtApikey}" -X POST "${apiDistribute}" \
+    curl --fail -u"${rtUser}:${rtApikey}" -X POST "${apiDistribute}" \
       --data "{\"targetRepo\" : \"${repositoryName}\",
         \"packagesRepoPaths\" : [\"${path}\"]}"
 
