@@ -243,12 +243,21 @@ distributeArtifact() {
 
   if [ -n "$rtId" ] && [ -n "$repositoryName" ] && [ -n "$path" ] ; then
     setupJfrogCliRt "$rtId"
+
+    local rtUrl
+    local rtUser
+    local rtApikey
+    scopeArtifactoryVariables "$rtId"
 #    access_token=$(jfrog rt access-token-create|jq .access_token)
 
     # test ping first...
-    curl -H"Authorization: Bearer ${rtApikey}" -X POST "${rtUrl}/router/api/v1/system/ping"
+    apiPing="${rtUrl}/router/api/v1/system/ping"
+    echo "ping Artifactory server: ${apiPing}"
+    curl -H"Authorization: Bearer ${rtApikey}" "${apiPing}"
 
-    curl -H"Authorization: Bearer ${rtApikey}" -X POST "${rtUrl}/api/distribute" \
+    apiDistribute="${rtUrl}/api/distribute"
+    echo "distribute Artifactory server: ${apiPing}"
+    curl -H"Authorization: Bearer ${rtApikey}" -X POST "${apiDistribute}" \
       --data "{\"targetRepo\" : \"${repositoryName}\",
         \"packagesRepoPaths\" : [\"${path}\"]}"
 
