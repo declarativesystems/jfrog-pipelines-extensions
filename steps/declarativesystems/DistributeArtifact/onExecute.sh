@@ -253,6 +253,7 @@ distributeArtifact() {
     apiDistribute="${rtUrl}/api/distribute"
     echo "distribute Artifactory server: ${apiDistribute}"
     curl --fail -u"${rtUser}:${rtApikey}" -X POST "${apiDistribute}" \
+      --header "Content-Type: application/json" \
       --data "{\"targetRepo\" : \"${repositoryName}\",
         \"packagesRepoPaths\" : [\"${path}\"]}"
 
