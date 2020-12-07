@@ -114,14 +114,6 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 * Publish a single artifact to bintray
 
 ```yaml
-      - name: distributeToTestBintrayRepo
-        type: declarativesystems/DistrubteArtifact
-        configuration:
-          sourceArtifactory: "artifactory" # Artifactory instance to use
-          repositoryName: "test" # Name of the *distribution* repository
-          path: "generic-local/somelib/somelib-1.2.3.js" # artifact to publish
-          integrations:
-            - name: artifactory
 ```
 
 
