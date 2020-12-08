@@ -257,6 +257,17 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
             - name: someGitRepo # code from git first
 ```
 
+### declarativesystems/SetupPodman
+* Setup `podman` so you can use it in your regular scripts for pushing/pulling
+  images
+  
+```yaml
+      - name: authPodmanArtifactory
+        type: declarativesystems/SetupPodman
+        configuration:
+          affinityGroup: somegroup # must use affinity to make configured system available to next step
+          sourceArtifactory: artifactory # name of artifactory integration to publish artefacts to
+```
 
 ## Building
 
