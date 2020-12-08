@@ -267,6 +267,8 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
         configuration:
           affinityGroup: somegroup # must use affinity to make configured system available to next step
           sourceArtifactory: artifactory # name of artifactory integration to publish artefacts to
+          integrations:
+            - name: artifactory
 ```
 
 ## Building
