@@ -104,12 +104,12 @@ setupArtifactoryPodman() {
 
     # store container-related settings and data in one directory so that
     # it can be copied between steps
-    local containerStorageDir="/containers"
-    add_run_variables containerStorageDir="$containerStorageDir"
+    add_run_variables containerStorageDir="/containers"
 
     # reconfigure container subsystem to use this directory (custom script in
     # image)
     container_storage_setup "$containerStorageDir"
+    echo "container storage dir set to $containerStorageDir"
 
     # intermediate tarball to copy between steps
     add_run_variables containerStateTarball="/tmp/containers.tar.gz"
