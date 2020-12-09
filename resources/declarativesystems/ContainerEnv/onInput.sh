@@ -247,35 +247,21 @@ password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
-artifactoryUpload() {
-  local status
-  local rtId
-  rtId=$(find_step_configuration_value "sourceArtifactory")
-
-  local source
-  source=$(find_step_configuration_value "source")
-
-  local path
-  path=$(find_step_configuration_value "path")
-
-  if [ -n "$rtId" ] && [ -n "$path" ] && [ -f "$source" ]; then
-    setupJfrogCliRt "$rtId"
-
-    echo "publishing ${source} to artifactory path:${path}..."
-    jfrog rt upload \
-      --build-number "$buildNumber" \
-      --build-name "$buildName" \
-      "$source" "$path"
-    status=$?
-  else
-    echo "one or more parameters missing:"
-    echo "  sourceArtifactory:${rtId}"
-    echo "  path:${path}"
-    echo "  source:${source} exists:"$(test -f "$source" && echo "yes" || echo "no")
-
-    status=1
+# login to artifactory and recover container state
+restore_container_env_state() {
+  resourceName=$1
+  restore_run_files containerStateTarball "$containerStateTarball"
+  if [ -f "$containerStateTarball" ] ; then
+    local containerStateTarballSize
+    containerStateTarballSize=$(fileSizeMb "$containerStateTarball")
+    tar -zxf "$containerStateTarball" -C /
+    echo "restored container state (${containerStateTarballSize}MB)"
   fi
-  return "$status"
+
+  # artifactory setup
+  local rtId
+  rtId=$(find_resource_variable "$resourceName" "sourceArtifactory")
+  setupArtifactoryPodman "$rtId"
 }
 
-execute_command artifactoryUpload
+execute_command "restore_container_env_state %%context.resourceName%%"

@@ -4,4 +4,3 @@ configuration:
     type: String
     validate:
       notEmpty: true
-

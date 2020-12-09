@@ -16,6 +16,58 @@
 
 See https://github.com/declarativesystems/jfrog-pipelines-image
 
+## Pipeline Resources
+
+### declarativesystems/ContainerEnv
+
+* Support for OCI containers (podman/buildah) and preserving state between steps
+* At the start of each step, login to artifactory and recover any saved state
+* At the end of each step, compress and save the state
+* Todo: Use artifactory as cache during build
+
+**Example**
+
+_Resource section_
+
+```yaml
+apiVersion: v1.1
+resources:
+  - name: containerEnvSomeUniqueName
+    type: declarativesystems/ContainerEnv
+    configuration:
+      sourceArtifactory: artifactory # for OCI image push
+steps:
+  - name: podmanImageBuild
+    type: Bash
+    configuration:
+      # ...
+      integrations:
+        - name: artifactory
+      inputResources:
+        - name: containerEnvSomeUniqueName
+      outputResources:
+        - name: containerEnvSomeUniqueName
+    execution:
+      onExecute:
+        - podman build ...
+
+  - name: podmanImagePush
+    type: Bash
+    configuration:
+      # ...
+      integrations:
+        - name: artifactory
+      inputResources:
+        - name: containerEnvSomeUniqueName
+      # no need for output step since we're finished with container state 
+    execution:
+      onExecute:
+        - podman push ...
+
+```
+
+_Steps section_
+
 ## Pipeline Steps
 
 ### declarativesystems/ArtifactoryDownload
@@ -257,19 +309,6 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
             - name: someGitRepo # code from git first
 ```
 
-### declarativesystems/SetupPodman
-* Setup `podman` so you can use it in your regular scripts for pushing/pulling
-  images
-  
-```yaml
-      - name: authPodmanArtifactory
-        type: declarativesystems/SetupPodman
-        configuration:
-          affinityGroup: somegroup # must use affinity to make configured system available to next step
-          sourceArtifactory: artifactory # name of artifactory integration to publish artefacts to
-          integrations:
-            - name: artifactory
-```
 
 ## Building
 

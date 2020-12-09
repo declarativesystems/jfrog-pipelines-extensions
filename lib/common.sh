@@ -1,3 +1,9 @@
+# Print the size of `filename` in MB
+# $1 filename
+fileSizeMb() {
+  echo $(($(stat --printf="%s" "$1") / 1024 / 1024))
+}
+
 # run a command inside `$sourceLocation` (configuration/sourceLocation) if set
 # otherwise just use the current directory
 # @param $1 file to look for (eg `package.json`) which means we are in the right
@@ -13,9 +19,12 @@ runCommandAgainstSource() {
   local sourceLocation
   sourceLocation=$(eval echo "$sourceLocationVar")
 
-  if [ -n "$sourceLocation" ] ; then
+  if [ -n "$sourceLocation" ]; then
     echo "entering sourceLocation: ${sourceLocation}"
-    pushd "$sourceLocation" || ( echo "no such directory: ${sourceLocation}" ; return 1 )
+    pushd "$sourceLocation" || (
+      echo "no such directory: ${sourceLocation}"
+      return 1
+    )
   fi
 
   if [ -f "${markerFile}" ]; then
@@ -28,11 +37,13 @@ runCommandAgainstSource() {
     status=1
   fi
 
-  if [ -n "$sourceLocation" ] ; then
+  if [ -n "$sourceLocation" ]; then
     echo "leaving sourceLocation..."
-    popd || ( echo "failed to return to previous directory!" ; return 1 )
+    popd || (
+      echo "failed to return to previous directory!"
+      return 1
+    )
   fi
-
 
   return "$status"
 }
@@ -88,28 +99,23 @@ setupArtifactoryPodman() {
   scopeArtifactoryVariables "$rtId"
   local status
 
-  if [ -n "$rtUrl" ] && [ -n "$rtUser" ] && [ -n "$rtApikey" ] ; then
+  if [ -n "$rtUrl" ] && [ -n "$rtUser" ] && [ -n "$rtApikey" ]; then
     echo "setting up podman for artifactory: ${rtUrl}..."
 
-    # store container-related settings and builds outside the container and
-    # make the location available as a build variable
+    # store container-related settings and data in one directory so that
+    # it can be copied between steps
     local containerStorageDir="/containers"
     add_run_variables containerStorageDir="$containerStorageDir"
-
-    # store the default auth file outside the container and export its path
-    # as a build variable - this will also make it the defualt for subsequent
-    # podman push operations
-    export REGISTRY_AUTH_FILE="${containerStorageDir}/auth.json"
-    add_run_variables REGISTRY_AUTH_FILE="$REGISTRY_AUTH_FILE"
 
     # reconfigure container subsystem to use this directory (custom script in
     # image)
     container_storage_setup "$containerStorageDir"
 
+    # intermediate tarball to copy between steps
+    add_run_variables containerStateTarball="/tmp/containers.tar.gz"
+
     podman login --username "$rtUser" --password "$rtApikey" "$rtUrl"
     status=$?
-    add_run_files "$containerStorageDir" containerStorageDir
-    echo "podman state cached, recover with: restore_run_files containerStorageDir \${containerStorageDir}"
   else
     echo "failed to setup podman for artifactory, one ore more required parameters missing - rtUrl: ${rtUrl} rtUser: ${rtUser} rtApikey: $([[ "$rtApikey" != "" ]] && echo "REDACTED")"
     status=1
@@ -133,7 +139,6 @@ setupArtifactoryNpm() {
   local rtUser
   local rtApikey
   scopeArtifactoryVariables "$rtId"
-
 
   # magic URL that generates ~/.npmrc - this guy is the same no matter what
   # your repository is called and authorises you for all repos your account
@@ -178,7 +183,7 @@ setupAwsCli() {
   local awsSecretAccessKey
   awsSecretAccessKey=$(eval echo "$"int_"$awsKey"_secretAccessKey)
 
-  if [ -n "$awsRegion" ] && [ -n "$awsAccessKeyId" ] && [ -n "$awsSecretAccessKey" ] ; then
+  if [ -n "$awsRegion" ] && [ -n "$awsAccessKeyId" ] && [ -n "$awsSecretAccessKey" ]; then
     echo "setting up AWS CLI for access key: ${awsAccessKeyId}..."
     mkdir -p ~/.aws
 
@@ -215,7 +220,7 @@ setupArtifactoryPip() {
   rtUrlStripped=$(echo "$rtUrl" | sed -r "s/http(s)?:\/\///")
 
   mkdir -p ~/.pip
-  cat <<EOF > ~/.pip/pip.conf
+  cat <<EOF >~/.pip/pip.conf
 [global]
 index-url = https://${rtUser}:${rtApikey}@${rtUrlStripped}/api/pypi/${repositoryName}/simple
 EOF
@@ -231,7 +236,7 @@ setupArtifactoryPypirc() {
   local rtApikey
   scopeArtifactoryVariables "$rtId"
 
-  cat <<EOF > ~/.pypirc
+  cat <<EOF >~/.pypirc
 [distutils]
 index-servers = local
 [local]
