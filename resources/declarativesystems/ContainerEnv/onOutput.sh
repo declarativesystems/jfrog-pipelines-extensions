@@ -259,4 +259,4 @@ save_container_env_state() {
   echo "saved container state (${containerStateTarballSize}MB)"
 }
 
-execute_command "save_container_env_state %%context.resourceName%%"
+execute_command save_container_env_state "%%context.resourceName%%"

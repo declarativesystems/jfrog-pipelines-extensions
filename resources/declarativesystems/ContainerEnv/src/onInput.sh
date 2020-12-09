@@ -15,4 +15,4 @@ restore_container_env_state() {
   setupArtifactoryPodman "$rtId"
 }
 
-execute_command "restore_container_env_state %%context.resourceName%%"
+execute_command restore_container_env_state "%%context.resourceName%%"
