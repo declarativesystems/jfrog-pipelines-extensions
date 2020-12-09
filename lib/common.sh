@@ -108,7 +108,7 @@ setupArtifactoryPodman() {
 
     podman login --username "$rtUser" --password "$rtApikey" "$rtUrl"
     status=$?
-    add_run_files "$containerStorageDir" containerStorageDir
+    add_cache_files "$containerStorageDir" containerStorageDir
   else
     echo "failed to setup podman for artifactory, one ore more required parameters missing - rtUrl: ${rtUrl} rtUser: ${rtUser} rtApikey: $([[ "$rtApikey" != "" ]] && echo "REDACTED")"
     status=1
