@@ -90,6 +90,16 @@ setupArtifactoryPodman() {
 
   if [ -n "$rtUrl" ] && [ -n "$rtUser" ] && [ -n "$rtApikey" ] ; then
     echo "setting up podman for artifactory: ${rtUrl}..."
+
+    # store container-related settings and builds outside the container and
+    # make the location available as a build variable
+    local container_storage_dir="${pipeline_workspace_dir}/containers"
+    add_run_variables container_storage_dir="$container_storage_dir"
+
+    # reconfigure container subsystem to use this directory (custom script in
+    # image)
+    container_storage_setup "$container_storage_dir"
+
     podman login --username "$rtUser" --password "$rtApikey" "$rtUrl"
     status=$?
   else
