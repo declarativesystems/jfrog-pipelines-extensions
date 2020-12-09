@@ -94,7 +94,7 @@ setupArtifactoryPodman() {
 
     # store container-related settings and builds outside the container and
     # make the location available as a build variable
-    local containerStorageDir="${pipeline_workspace_dir}/containers"
+    local containerStorageDir="/containers"
     add_run_variables containerStorageDir="$containerStorageDir"
 
     # store the default auth file outside the container and export its path
@@ -109,6 +109,7 @@ setupArtifactoryPodman() {
 
     podman login --username "$rtUser" --password "$rtApikey" "$rtUrl"
     status=$?
+    add_run_files "$containerStorageDir" containerStorageDir
   else
     echo "failed to setup podman for artifactory, one ore more required parameters missing - rtUrl: ${rtUrl} rtUser: ${rtUser} rtApikey: $([[ "$rtApikey" != "" ]] && echo "REDACTED")"
     status=1
