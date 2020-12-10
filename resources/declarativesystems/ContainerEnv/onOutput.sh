@@ -255,7 +255,7 @@ save_container_env_state() {
   clean=$(find_resource_variable "$resourceName" "clean")
   if [ "$clean" = true ] ; then
     echo "cleaning container state"
-    rm -rf "$containerStorageDir/*"
+    rm -rf "$containerStorageDir"/*
   fi
 
   echo "compressing and saving files for next step"
