@@ -4,3 +4,7 @@ configuration:
     type: String
     validate:
       notEmpty: true
+  # remove container state to speed up subsequent steps
+  clean:
+    type: Boolean
+    default: false
