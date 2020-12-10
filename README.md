@@ -20,14 +20,16 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 
 ### declarativesystems/ContainerEnv
 
-* Support for OCI containers (podman/buildah) and preserving state between steps
-* At the start of each step, login to artifactory and recover any saved state
-* At the end of each step, compress and save the state
-* Todo: Use artifactory as cache during build
+* Support for OCI containers (podman/buildah), optionally preserving state 
+  between steps
+* _inputResource_ - Login to artifactory and recover any saved state
+* _outputResource_ - Compress and save the state
+* While its possible to split builds over two or more steps to get nice icons
+  in the console, this is not recommended at the moment due to complex setup and
+  extremely slow build times due to the need to copy files between build steps -
+  15m builds for a 250MB container were typical with this approach
 
-**Example**
-
-_Resource section_
+**Recommended approach**
 
 ```yaml
 apiVersion: v1.1
@@ -37,33 +39,72 @@ resources:
     configuration:
       sourceArtifactory: artifactory # for OCI image push
 steps:
-  - name: podmanImageBuild
+  - name: buildAndPushContainerImage
     type: Bash
     configuration:
       # ...
       integrations:
         - name: artifactory
       inputResources:
-        - name: containerEnvSomeUniqueName
-      outputResources:
         - name: containerEnvSomeUniqueName
     execution:
       onExecute:
         - podman build ...
-
-  - name: podmanImagePush
-    type: Bash
-    configuration:
-      # ...
-      integrations:
-        - name: artifactory
-      inputResources:
-        - name: containerEnvSomeUniqueName
-      # no need for output step since we're finished with container state 
-    execution:
-      onExecute:
         - podman push ...
+```
 
+**Split approach**
+
+* Gives nice breakdown of steps in pipelines console
+* SLOW!
+
+```yaml
+apiVersion: v1.1
+resources:
+  - name: containerEnvSomeUniqueNameInput
+    type: declarativesystems/ContainerEnv
+    configuration:
+      sourceArtifactory: artifactory
+  - name: containerEnvSomeUniqueNameOutput
+    type: declarativesystems/ContainerEnv
+    configuration:
+      sourceArtifactory: artifactory
+  - name: containerEnvSomeUniqueNameClean
+    type: declarativesystems/ContainerEnv
+    configuration:
+      sourceArtifactory: artifactory
+      clean: true
+pipelines:
+  steps:
+    - name: podmanImageBuild
+      type: Bash
+      configuration:
+        inputResources:
+          - name: containerEnvSomeUniqueNameInput
+        outputResources:
+          - name: containerEnvSomeUniqueNameOutput
+        integrations:
+          - name: artifactory
+      execution:
+        onExecute:
+          - podman build ...
+  
+    - name: podmanImagePush
+      type: Bash
+      configuration:
+        inputResources:
+          - name: containerEnvSomeUniqueNameInput
+        integrations:
+          - name: artifactory
+        inputSteps:
+          - name: podmanImageBuild
+        outputResources:
+          # remove container state once you've finished with it if you have more
+          # steps in the pipeline 
+          - name: containerEnvSomeUniqueNameClean  
+      execution:
+        onExecute:
+          - podman push ...
 ```
 
 _Steps section_
