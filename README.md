@@ -209,32 +209,6 @@ _Steps section_
 ```yaml
 ```
 
-
-### declarativesystems/GoReleaser
-
-* Build a release snapshot tarball using `goreleaser --snapshot`
-* Snapshot releases do not publish git tags, etc
-* Project must already be configured with a `.goreleaser.yml` file
-* Upload the tarball to Artifactory
-* Gotcha/todo: _dependencies_ not sourced from Artifactory
-
-**Example**
-
-```yaml
-      - name: goReleaser
-        type: declarativesystems/GoReleaser
-        configuration:
-          sourceArtifactory: artifactory # name of artifactory integration to use
-          sourceLocation: $res_someGitRepo_resourcePath # where to find sources to build
-          repositoryName: generic-local # where to upload tarballs
-          buildName: some-name # Artifactory metadata
-          buildNumber: $run_number # Artifactory metadata
-          integrations:
-            - name: artifactory # grant access to integration
-          inputResources:
-            - name: someGitRepo # checkout code from git first
-```
-
 ### declarativesystems/NpmBuild
 
 * Drop-in replacement for native NpmBuild to allow building with NodeJS v15
