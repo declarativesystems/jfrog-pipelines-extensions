@@ -7,14 +7,7 @@ restore_container_env_state() {
   rtId=$(find_resource_variable "$resourceName" "sourceArtifactory")
   setupArtifactoryPodman "$rtId"
 
-  echo "attempting container state recovery"
-  restore_run_files containerStateTarball "$containerStateTarball"
-  if [ -f "$containerStateTarball" ] ; then
-    local containerStateTarballSize
-    containerStateTarballSize=$(fileSizeMb "$containerStateTarball")
-    tar -zxf "$containerStateTarball" -C /
-    echo "restored container state (${containerStateTarballSize}MB)"
-  fi
+  restoreTarball containerStateTarball "$containerStateTarball"
 }
 
 execute_command restore_container_env_state "%%context.resourceName%%"

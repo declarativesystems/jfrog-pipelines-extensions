@@ -247,6 +247,49 @@ password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
+
+
+# create/update a tarball from files at $tarballPath and add the files to
+# pipeline with name $tarballName
+function ensureTarball() {
+  local tarballName="$1"
+  local tarballPath="$2"
+  local clean="$3"
+
+  # Keeping tarballs in build workspace when they are no longer needed makes the
+  # whole build go slow, so delete them if no longer needed. We use a well known
+  # name `clean` as the variable to indicatewhen to do this
+  if [ "$clean" = true ]; then
+    echo "cleaning container state"
+    rm -rf "${containerStorageDir:?}"/*
+  fi
+
+
+  echo "updating state tarball: ${tarballName}"
+  if [ -d "$tarballPath" ]; then
+    tar -zcf "$tarballName" "$tarballPath"
+    add_run_files "$tarballPath" "$tarballName"
+
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    echo "saved state tarball: ${tarballName} (${tarballSize}MB)"
+  else
+    echo "no such directory:${tarballPath} - skipping"
+  fi
+}
+
+function restoreTarball() {
+  tarballName="$1"
+  tarballPath="$2"
+  echo "attempting state recovery: ${tarballName}"
+  restore_run_files "$tarballName" "$tarballPath"
+  if [ -f "$tarballPath" ]; then
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    tar -zxf "$tarballPath" -C /
+    echo "restored state: ${tarballName} (${tarballSize}MB)"
+  fi
+}
 distributeArtifact() {
   # https://www.jfrog.com/confluence/display/JFROG/Artifactory+REST+API#ArtifactoryRESTAPI-DistributeArtifact
   # POST /api/distribute

@@ -6,8 +6,7 @@
 * NodeJS v15
 * AWS CLI v2
 * GoReleaser
-* NpmBuild
-* NpmPublish
+* NPM/Yarn
 * Release to AWS ECR
 * PipInstall
 * PythonWheelDeploy
@@ -107,6 +106,67 @@ pipelines:
           - podman push ...
 ```
 
+### declarativesystems/NpmEnv
+
+* Enable NPM/Yarn to use Artifactory for dependency resolution and publishing
+* Persist build state between steps
+* Once Artifactory is configured, build the project your way, as you would on a
+  workstation. Eg: `make`, `yarn`, `npm`, etc...
+
+**Example**
+
+```yaml
+apiVersion: v1.1
+resources:
+  - name: npmEnvSomeProject
+    type: declarativesystems/NpmEnv
+    configuration:
+      sourceArtifactory: artifactory
+      repositoryName: npm
+      sourceLocation: /path/to/some/code
+pipelines:
+  - name: NodeDemo
+    configuration:
+      runtime:
+        type: image
+        image:
+          custom:
+            name: "declarativesystems.jfrog.io/docker-local/pipelines"
+            tag: "0.5.0-24"
+            registry: artifactory
+            sourceRepository: docker-local
+
+    steps:
+      - name: npmBuild
+        type: Bash
+        configuration:
+          integrations:
+            - name: artifactory
+          inputResources:
+            - name: npmEnvSomeProject
+          outputResources:
+            - name: npmEnvSomeProject
+        execution:
+          onStart:
+            - cd /path/to/some/code
+            - yarn
+
+      - name: npmPublishArtifactory
+        type: Bash
+        configuration:
+          integrations:
+            - name: artifactory
+          inputResources:
+            - name: npmEnvYolkTracker
+          inputSteps:
+            - name: npmBuild
+        execution:
+          onStart:
+            - cd /path/to/some/code
+            - yarn publish
+```
+
+
 _Steps section_
 
 ## Pipeline Steps
@@ -205,7 +265,7 @@ _Steps section_
 ### declarativesystems/DistributeArtifact
 
 * Publish a single artifact to bintray
-* Arrtifact to publish must already be uploaded to Artifactory
+* Artifact to publish must already be uploaded to Artifactory
 * Works the same way as click-thru deployments in the console
 * Distribution repository must already be setup
 
@@ -218,53 +278,6 @@ _Steps section_
           path: generic-local/someorg/somebinary/somebinary-1.2.3.exe
           integrations:
             - name: artifactory
-```
-
-### declarativesystems/NpmBuild
-
-* Drop-in replacement for native NpmBuild to allow building with NodeJS v15
-* Uses `npm install` configured for `sourceArtifactory` vs \
-  `jfrog rt npm-install`
-* Build using `npm build` (or `buildCommand`)
-* Build output made available to next step via `affinityGroup`
-
-**Example**
-
-```yaml
-      - name: build
-        type: declarativesystems/NpmBuild
-        configuration:
-          affinityGroup: npm
-          sourceArtifactory: artifactory # name of artifactory integration to source dependencies from
-          sourceLocation: $res_someGitRepo_resourcePath # where to find sources to build
-          repositoryName: npm # repository to source dependencies from
-          buildCommand: make # optional (default is npm build)
-          integrations:
-            - name: artifactory # grant access to integration
-          inputResources:
-            - name: someGitRepo # checkout code from git first
-```
-
-### declarativesystems/NpmPublish
-
-* Drop-in replacement for native NpmPublish to easily publish builds created
-  with `declarativesystems/NpmBuild`
-* Publishes build to Artifactory with `npm publish --registry`
-* Obtains build via `affinityGroup`
-
-**Example**
-
-```yaml
-      - name: publish
-        type: declarativesystems/NpmPublish
-        configuration:
-          affinityGroup: npm
-          sourceArtifactory: artifactory # name of artifactory integration to publish dependencies to
-          repositoryName: npm-local # repository to publish dependencies to
-          integrations:
-            - name: artifactory # grant access to integration
-          inputSteps:
-            - name: build # checkout code from git first
 ```
 
 ### declarativesystems/PodmanPushAwsEcr

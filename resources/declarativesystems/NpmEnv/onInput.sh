@@ -247,38 +247,63 @@ password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
-npmInstall() {
-  local installCommand
-  installCommand="npm install ${npmArgs}"
 
-  echo "running: ${installCommand}"
-  $installCommand
+
+# create/update a tarball from files at $tarballPath and add the files to
+# pipeline with name $tarballName
+function ensureTarball() {
+  local tarballName="$1"
+  local tarballPath="$2"
+  local clean="$3"
+
+  # Keeping tarballs in build workspace when they are no longer needed makes the
+  # whole build go slow, so delete them if no longer needed. We use a well known
+  # name `clean` as the variable to indicatewhen to do this
+  if [ "$clean" = true ]; then
+    echo "cleaning container state"
+    rm -rf "${containerStorageDir:?}"/*
+  fi
+
+
+  echo "updating state tarball: ${tarballName}"
+  if [ -d "$tarballPath" ]; then
+    tar -zcf "$tarballName" "$tarballPath"
+    add_run_files "$tarballPath" "$tarballName"
+
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    echo "saved state tarball: ${tarballName} (${tarballSize}MB)"
+  else
+    echo "no such directory:${tarballPath} - skipping"
+  fi
 }
 
-npmBuild() {
-  local buildCommand
-  buildCommand=$(find_step_configuration_value "buildCommand") || echo "npm build ${npmArgs}"
-
-  echo "running: ${buildCommand}"
-  $buildCommand
+function restoreTarball() {
+  tarballName="$1"
+  tarballPath="$2"
+  echo "attempting state recovery: ${tarballName}"
+  restore_run_files "$tarballName" "$tarballPath"
+  if [ -f "$tarballPath" ]; then
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    tar -zxf "$tarballPath" -C /
+    echo "restored state: ${tarballName} (${tarballSize}MB)"
+  fi
 }
+# login to artifactory and recover container state
+restore_npm_env_state() {
+  resourceName=$1
 
-npmBuildMain() {
-  # grab a bunch of environment variables - since whole of pipelines is
-  # basically a huge BASH script be extra careful and scope everything `local`
-
+  # artifactory setup
   local rtId
-  rtId=$(find_step_configuration_value "sourceArtifactory")
+  rtId=$(find_resource_variable "$resourceName" "sourceArtifactory")
 
   # the unified repository for resolving all artifacts
   local repositoryName
-  repositoryName=$(find_step_configuration_value "repositoryName")
-
-  local npmArgs
-  npmArgs=$(find_step_configuration_value "npmArgs")
+  repositoryName=$(find_resource_variable "$resourceName" "repositoryName")
 
   setupArtifactoryNpm "$rtId" "$repositoryName"
-  runCommandAgainstSource "package.json" "npmInstall && npmBuild"
+  restoreTarball npmStateTarball "$(pwd)"
 }
 
-execute_command npmBuildMain
+execute_command restore_npm_env_state "%%context.resourceName%%"

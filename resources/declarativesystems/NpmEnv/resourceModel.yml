@@ -4,20 +4,17 @@ configuration:
     type: String
     validate:
       notEmpty: true
+  # remove container state to speed up subsequent steps
+  clean:
+    type: Boolean
+    default: false
   # artifactory repo used to resolve build artifacts
   repositoryName:
     type: String
     validate:
       notEmpty: true
-  # source code to build
+  # source code to persist to the next stage
   sourceLocation:
     type: String
     validate:
       notEmpty: true
-  # the build command - eg `make` - default is to run "npm build"
-  buildCommand:
-    type: String
-
-  # extra args for npm eg --verbose
-  npmArgs:
-    type: String

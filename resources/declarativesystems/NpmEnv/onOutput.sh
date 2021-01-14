@@ -248,52 +248,56 @@ EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
 
-# publish to artifactory
-# @param $1 the URL of the NPM repository
-# @param $2 extra npm args
-npmPublish() {
-  local rtNpmUrl=$1
-  local npmArgs=$2
-  # npm gives a hard to follow error if package VERSION already published so
-  # lookup whether this version already exists...
 
-  # grab package name and version from package.json
-  local packageName
-  packageName=$(jq -r .name < package.json)
-  local packageVersion
-  packageVersion=$(jq -r .version < package.json)
-  echo "checking if package ${packageName} version ${packageVersion} already exists..."
-  if npm search "$packageName" | awk -F\| '{ gsub(/ /, "", $5); print $5 }' | grep "$packageVersion" ; then
-    echo "Package ${packageName} version ${packageVersion} already exists"
-    echo "Increment version number or remove old version from artifactory to publish"
-    status=1
-  else
-    publishCommand="npm publish --registry ${rtNpmUrl} ${npmArgs}"
+# create/update a tarball from files at $tarballPath and add the files to
+# pipeline with name $tarballName
+function ensureTarball() {
+  local tarballName="$1"
+  local tarballPath="$2"
+  local clean="$3"
 
-    echo "running: ${publishCommand}"
-    $publishCommand
-    status=$?
+  # Keeping tarballs in build workspace when they are no longer needed makes the
+  # whole build go slow, so delete them if no longer needed. We use a well known
+  # name `clean` as the variable to indicatewhen to do this
+  if [ "$clean" = true ]; then
+    echo "cleaning container state"
+    rm -rf "${containerStorageDir:?}"/*
   fi
-  return "$status"
+
+
+  echo "updating state tarball: ${tarballName}"
+  if [ -d "$tarballPath" ]; then
+    tar -zcf "$tarballName" "$tarballPath"
+    add_run_files "$tarballPath" "$tarballName"
+
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    echo "saved state tarball: ${tarballName} (${tarballSize}MB)"
+  else
+    echo "no such directory:${tarballPath} - skipping"
+  fi
 }
 
-npmPublishMain() {
-  # artifactory server for resolve & deploy
-  local rtId
-  rtId=$(find_step_configuration_value "sourceArtifactory")
+function restoreTarball() {
+  tarballName="$1"
+  tarballPath="$2"
+  echo "attempting state recovery: ${tarballName}"
+  restore_run_files "$tarballName" "$tarballPath"
+  if [ -f "$tarballPath" ]; then
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    tar -zxf "$tarballPath" -C /
+    echo "restored state: ${tarballName} (${tarballSize}MB)"
+  fi
+}
+# save state of containers, less any auth credentials (in /run usually)
+save_container_env_state() {
+  resourceName=$1
 
-  # repository for artifact publishing
-  local repositoryName
-  repositoryName=$(find_step_configuration_value "repositoryName")
+  local clean
+  clean=$(find_resource_variable "$resourceName" "clean")
 
-  local npmArgs
-  npmArgs=$(find_step_configuration_value "npmArgs")
-
-  local rtNpmUrl
-  rtNpmUrl=$(npmRegistryUrl "$rtId" "$repositoryName")
-
-  setupArtifactoryNpm "$rtId" "$repositoryName"
-  runCommandAgainstSource "package.json" "npmPublish ${rtNpmUrl} ${npmArgs}"
+  ensureTarball npmStateTarball $(pwd) "$clean"
 }
 
-execute_command npmPublishMain
+execute_command save_container_env_state "%%context.resourceName%%"

@@ -247,28 +247,57 @@ password: ${rtApikey}
 EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
+
+
+# create/update a tarball from files at $tarballPath and add the files to
+# pipeline with name $tarballName
+function ensureTarball() {
+  local tarballName="$1"
+  local tarballPath="$2"
+  local clean="$3"
+
+  # Keeping tarballs in build workspace when they are no longer needed makes the
+  # whole build go slow, so delete them if no longer needed. We use a well known
+  # name `clean` as the variable to indicatewhen to do this
+  if [ "$clean" = true ]; then
+    echo "cleaning container state"
+    rm -rf "${containerStorageDir:?}"/*
+  fi
+
+
+  echo "updating state tarball: ${tarballName}"
+  if [ -d "$tarballPath" ]; then
+    tar -zcf "$tarballName" "$tarballPath"
+    add_run_files "$tarballPath" "$tarballName"
+
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    echo "saved state tarball: ${tarballName} (${tarballSize}MB)"
+  else
+    echo "no such directory:${tarballPath} - skipping"
+  fi
+}
+
+function restoreTarball() {
+  tarballName="$1"
+  tarballPath="$2"
+  echo "attempting state recovery: ${tarballName}"
+  restore_run_files "$tarballName" "$tarballPath"
+  if [ -f "$tarballPath" ]; then
+    local tarballSize
+    tarballSize=$(fileSizeMb "$tarballPath")
+    tar -zxf "$tarballPath" -C /
+    echo "restored state: ${tarballName} (${tarballSize}MB)"
+  fi
+}
 # save state of containers, less any auth credentials (in /run usually)
 save_container_env_state() {
   resourceName=$1
 
   local clean
   clean=$(find_resource_variable "$resourceName" "clean")
-  if [ "$clean" = true ] ; then
-    echo "cleaning container state"
-    rm -rf "$containerStorageDir"/*
-  fi
 
-  echo "compressing and saving files for next step"
-  if [ -d "$containerStorageDir" ] ; then
-    tar -zcf "$containerStateTarball" "$containerStorageDir"
-    add_run_files "$containerStateTarball" containerStateTarball
-
-    local containerStateTarballSize
-    containerStateTarballSize=$(fileSizeMb "$containerStateTarball")
-    echo "saved container state (${containerStateTarballSize}MB)"
-  else
-    echo "no container directory:${containerStorageDir} - skipping"
-  fi
+  ensureTarball containerStateTarball "$containerStorageDir" "$clean"
 }
 
 execute_command save_container_env_state "%%context.resourceName%%"
