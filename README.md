@@ -19,16 +19,12 @@ See https://github.com/declarativesystems/jfrog-pipelines-image
 
 ### declarativesystems/ContainerEnv
 
-* Support for OCI containers (podman/buildah), optionally preserving state 
-  between steps
-* _inputResource_ - Login to artifactory and recover any saved state
-* _outputResource_ - Compress and save the state
-* While its possible to split builds over two or more steps to get nice icons
-  in the console, this is not recommended at the moment due to complex setup and
-  extremely slow build times due to the need to copy files between build steps -
-  15m builds for a 250MB container were typical with this approach
+* Support for OCI containers (podman/buildah)
+* Authenticate containerd with artifactory
+* Once Artifactory is configured, build the image your way, as you would on a
+  workstation. Eg: `podman build` ... `podman push`
 
-**Recommended approach**
+**Example**
 
 ```yaml
 apiVersion: v1.1
@@ -52,118 +48,35 @@ steps:
         - podman push ...
 ```
 
-**Split approach**
-
-* Gives nice breakdown of steps in pipelines console
-* SLOW!
-
-```yaml
-apiVersion: v1.1
-resources:
-  - name: containerEnvSomeUniqueNameInput
-    type: declarativesystems/ContainerEnv
-    configuration:
-      sourceArtifactory: artifactory
-  - name: containerEnvSomeUniqueNameOutput
-    type: declarativesystems/ContainerEnv
-    configuration:
-      sourceArtifactory: artifactory
-  - name: containerEnvSomeUniqueNameClean
-    type: declarativesystems/ContainerEnv
-    configuration:
-      sourceArtifactory: artifactory
-      clean: true
-pipelines:
-  steps:
-    - name: podmanImageBuild
-      type: Bash
-      configuration:
-        inputResources:
-          - name: containerEnvSomeUniqueNameInput
-        outputResources:
-          - name: containerEnvSomeUniqueNameOutput
-        integrations:
-          - name: artifactory
-      execution:
-        onExecute:
-          - podman build ...
-  
-    - name: podmanImagePush
-      type: Bash
-      configuration:
-        inputResources:
-          - name: containerEnvSomeUniqueNameInput
-        integrations:
-          - name: artifactory
-        inputSteps:
-          - name: podmanImageBuild
-        outputResources:
-          # remove container state once you've finished with it if you have more
-          # steps in the pipeline 
-          - name: containerEnvSomeUniqueNameClean  
-      execution:
-        onExecute:
-          - podman push ...
-```
-
 ### declarativesystems/NpmEnv
 
 * Enable NPM/Yarn to use Artifactory for dependency resolution and publishing
-* Persist build state between steps
 * Once Artifactory is configured, build the project your way, as you would on a
-  workstation. Eg: `make`, `yarn`, `npm`, etc...
+  workstation. Eg: `yarn`, `npm`, etc...
 
 **Example**
 
 ```yaml
 apiVersion: v1.1
 resources:
-  - name: npmEnvSomeProject
+  - name: npmEnvSomeUniqueName
     type: declarativesystems/NpmEnv
     configuration:
-      sourceArtifactory: artifactory
+      sourceArtifactory: artifactory # for resolving and publishing packages
       repositoryName: npm
-      sourceLocation: /path/to/some/code
-pipelines:
-  - name: NodeDemo
+steps:
+  - name: yarnBuildAndPush
+    type: Bash
     configuration:
-      runtime:
-        type: image
-        image:
-          custom:
-            name: "declarativesystems.jfrog.io/docker-local/pipelines"
-            tag: "0.5.0-24"
-            registry: artifactory
-            sourceRepository: docker-local
-
-    steps:
-      - name: npmBuild
-        type: Bash
-        configuration:
-          integrations:
-            - name: artifactory
-          inputResources:
-            - name: npmEnvSomeProject
-          outputResources:
-            - name: npmEnvSomeProject
-        execution:
-          onStart:
-            - cd /path/to/some/code
-            - yarn
-
-      - name: npmPublishArtifactory
-        type: Bash
-        configuration:
-          integrations:
-            - name: artifactory
-          inputResources:
-            - name: npmEnvYolkTracker
-          inputSteps:
-            - name: npmBuild
-        execution:
-          onStart:
-            - cd /path/to/some/code
-            - yarn publish
+      # ...
+      integrations:
+        - name: artifactory
+      inputResources:
+        - name: npmEnvSomeUniqueName
+    execution:
+      onExecute:
+        - yarn build ...
+        - yarn publish ...
 ```
 
 

@@ -21,10 +21,6 @@ define concat_res
 	$(call write_header,$(1)onInput.sh)
 	cat $(COMMON_LIB) >> $(1)onInput.sh
 	cat $(1)src/onInput.sh >> $(1)onInput.sh
-
-	$(call write_header,$(1)onOutput.sh)
-	cat $(COMMON_LIB) >> $(1)onOutput.sh
-	cat $(1)src/onOutput.sh >> $(1)onOutput.sh
 endef
 
 clean:

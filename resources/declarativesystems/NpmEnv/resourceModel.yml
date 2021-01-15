@@ -4,17 +4,8 @@ configuration:
     type: String
     validate:
       notEmpty: true
-  # remove container state to speed up subsequent steps
-  clean:
-    type: Boolean
-    default: false
   # artifactory repo used to resolve build artifacts
   repositoryName:
-    type: String
-    validate:
-      notEmpty: true
-  # source code to persist to the next stage
-  sourceLocation:
     type: String
     validate:
       notEmpty: true
