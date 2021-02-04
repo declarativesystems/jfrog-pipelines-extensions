@@ -175,23 +175,6 @@ _Steps section_
             - name: aws # grant access integration
 ```
 
-### declarativesystems/DistributeArtifact
-
-* Publish a single artifact to bintray
-* Artifact to publish must already be uploaded to Artifactory
-* Works the same way as click-thru deployments in the console
-* Distribution repository must already be setup
-
-```yaml
-      - name: distributeToTestBintrayRepo
-        type: declarativesystems/DistributeArtifact
-        configuration:
-          sourceArtifactory: "artifactory"
-          repositoryName: "test" # name of the distribution repository
-          path: generic-local/someorg/somebinary/somebinary-1.2.3.exe
-          integrations:
-            - name: artifactory
-```
 
 ### declarativesystems/PodmanPushAwsEcr
 
