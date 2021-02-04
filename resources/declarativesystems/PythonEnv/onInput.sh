@@ -290,14 +290,16 @@ function restoreTarball() {
     echo "restored state: ${tarballName} (${tarballSize}MB)"
   fi
 }
-pipInstall() {
+setupPythonEnv() {
+  local resourceName="$1"
+
   local rtId
-  rtId=$(find_step_configuration_value "sourceArtifactory")
+  rtId=$(find_resource_variable "$resourceName" "sourceArtifactory")
   local repositoryName
-  repositoryName=$(find_step_configuration_value "repositoryName")
+  repositoryName=$(find_resource_variable "$resourceName" "repositoryName")
 
   setupArtifactoryPip "$rtId" "$repositoryName"
-  runCommandAgainstSource "setup.py" "pip install ."
+  setupArtifactoryPypirc "$rtId" "$repositoryName"
 }
 
-execute_command pipInstall
+execute_command setupPythonEnv "%%context.resourceName%%"

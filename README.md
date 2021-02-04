@@ -79,6 +79,39 @@ steps:
         - yarn publish ...
 ```
 
+### declarativesystems/PythonEnv
+
+* Setup `pip` to resolve artifacts from `sourceArtifactory` vi `~/.pip/pip.conf`
+* Setup `setuptools` to deploy artifacts to `sourceArtifactory` via `.pypirc`
+* Once Artifactory integration is configured build the project your way, as you
+  would on a workstation. Eg: `pip install`, 
+  `python setup.py bdist_wheel upload -r local`, etc...
+
+**Example**
+
+```yaml
+apiVersion: v1.1
+resources:
+  - name: pythonEnvSomeUniqueName
+    type: declarativesystems/PythonEnv
+    configuration:
+      sourceArtifactory: artifactory # for resolving and publishing packages
+      repositoryName: pypi
+steps:
+  - name: pythonBuildAndPush
+    type: Bash
+    configuration:
+      # ...
+      integrations:
+        - name: artifactory
+      inputResources:
+        - name: pythonEnvSomeUniqueName
+    execution:
+      onExecute:
+        - pip install .
+        - python setup.py bdist_wheel upload -r local
+```
+
 
 _Steps section_
 
@@ -203,45 +236,6 @@ _Steps section_
             - name: artifactory # grant access to integration
             - name: aws # grant access to integration
 
-```
-
-### declarativesystems/PipInstall
-* Configure `pip` to use artifactory to resolve dependencies
-* Run `pip install .` against source code
-* Use `affinityGroup` to let `PythonWheelDeploy` find files
-
-```yaml
-      - name: pipInstall
-        type: declarativesystems/PipInstall
-        configuration:
-          affinityGroup: python_env
-          sourceArtifactory: artifactory # name of artifactory integration to resolve dependencies from
-          repositoryName: pypi # repository to resolve dependencies from
-          sourceLocation: $res_someGitRepo_resourcePath # where to find sources to build
-          integrations:
-            - name: artifactory # grant access to integration
-          inputResources:
-            - name: someGitRepo # checkout code from git first
-```
-
-### declarativesystems/PythonWheelDeploy
-* Configure setuptools to use artifactory to publish build python wheel 
-  artefacts
-* Run `python setup.py bdist_wheel upload -r local` against source code
-* Use `affinityGroup` to access files from previous `PipInstall` step
-
-```yaml
-      - name: pythonWheelDeploy
-        type: declarativesystems/PythonWheelDeploy
-        configuration:
-          affinityGroup: python_env
-          sourceArtifactory: artifactory # name of artifactory integration to publish artefacts to
-          repositoryName: pypi-local # repository to publish artefacts to
-          sourceLocation: $res_someGitRepo_resourcePath # where to find sources to build
-          integrations:
-            - name: artifactory # grant access to integration
-          inputResources:
-            - name: someGitRepo # code from git first
 ```
 
 

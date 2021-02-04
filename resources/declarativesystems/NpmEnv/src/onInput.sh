@@ -1,6 +1,6 @@
 # login to artifactory and recover container state
 restore_npm_env_state() {
-  resourceName=$1
+  local resourceName="$1"
 
   # artifactory setup
   local rtId
