@@ -247,6 +247,31 @@ EOF
   echo "[debug] setuptools configured to use artifactory repo:${repositoryName}"
 }
 
+setupArtifactoryPoetry() {
+  local rtId=$1
+  local repositoryName=$2
+
+  local rtUrl
+  local rtUser
+  local rtApikey
+  scopeArtifactoryVariables "$rtId"
+  mkdir -p ~/.config/pypoetry/
+
+  cat <<EOF >~/.config/pypoetry/auth.toml
+[http-basic]
+[http-basic.${repositoryName}]
+username = "${rtUser}"
+password = "${rtApikey}"
+EOF
+
+  cat <<EOF >~/.config/pypoetry/config.toml
+[repositories]
+[repositories.${repositoryName}]
+url = "${rtUrl}/api/pypi/${repositoryName}"
+EOF
+
+  echo "[debug] poetry configured to use artifactory repo:${repositoryName}"
+}
 
 # create/update a tarball from files at $tarballPath and add the files to
 # pipeline with name $tarballName

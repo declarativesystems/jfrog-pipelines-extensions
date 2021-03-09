@@ -8,6 +8,7 @@ setupPythonEnv() {
 
   setupArtifactoryPip "$rtId" "$repositoryName"
   setupArtifactoryPypirc "$rtId" "$repositoryName"
+  setupArtifactoryPoetry "$rtId" "$repositoryName"
 }
 
 execute_command setupPythonEnv "%%context.resourceName%%"
