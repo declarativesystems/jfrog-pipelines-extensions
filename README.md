@@ -186,28 +186,6 @@ _Steps section_
             - add_pipeline_variables somelibVersion=$(make print_somelib_version)
 ```
 
-  
-### declarativesystems/AwsCli
-
-* Run an AWS CLI v2 command from your pipeline
-* Credentials stored securely in AWS Pipeline integration
-
-**Example**
-
-```yaml
-      - name: redeployImageToEcs
-        type: declarativesystems/AwsCli
-        configuration:
-          awsKey: "aws" # name of AWS integration
-          awsRegion: "us-east-1" # Region
-          awsAccountId: "111122223333" # AWS account ID
-          commands:
-            # array of commands to run in sequence
-            - "aws ecs update-service --force-new-deployment --cluster some-cluster --service some-service"
-          integrations:
-            - name: aws # grant access integration
-```
-
 
 ### declarativesystems/PodmanPushAwsEcr
 
