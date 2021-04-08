@@ -1,10 +1,4 @@
 configuration:
-  # artifactory used to resolve artifacts
-  sourceArtifactory:
-    type: String
-    validate:
-      notEmpty: true
-
   # artifactory path to upload to
   path:
     type: String

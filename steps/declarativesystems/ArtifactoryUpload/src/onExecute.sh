@@ -1,7 +1,5 @@
 artifactoryUpload() {
   local status
-  local rtId
-  rtId=$(find_step_configuration_value "sourceArtifactory")
 
   local source
   source=$(find_step_configuration_value "source")
@@ -9,9 +7,7 @@ artifactoryUpload() {
   local path
   path=$(find_step_configuration_value "path")
 
-  if [ -n "$rtId" ] && [ -n "$path" ] && [ -f "$source" ]; then
-    setupJfrogCliRt "$rtId"
-
+  if [ -n "$path" ] && [ -f "$source" ]; then
     echo "publishing ${source} to artifactory path:${path}..."
     jfrog rt upload \
       --build-number "$buildNumber" \
@@ -20,7 +16,6 @@ artifactoryUpload() {
     status=$?
   else
     echo "one or more parameters missing:"
-    echo "  sourceArtifactory:${rtId}"
     echo "  path:${path}"
     echo "  source:${source} exists:"$(test -f "$source" && echo "yes" || echo "no")
 

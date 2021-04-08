@@ -59,23 +59,6 @@ scopeArtifactoryVariables() {
   rtApikey=$(eval echo "$"int_"$rtId"_apikey)
 }
 
-# setup jfrog/artifactory CLI
-# working: setup ~/.jfrog and ping server
-# not working: jfrog rt npm-install
-setupJfrogCliRt() {
-  local rtId=$1
-  local rtUrl
-  local rtUser
-  local rtApikey
-  scopeArtifactoryVariables "$rtId"
-
-  export CI=true
-  echo "Setup artifactory id:${rtId} url:${rtUrl} user:${rtUser} rtApikey:$([[ "$rtApikey" != "" ]] && echo "REDACTED")..."
-  jfrog rt config --url "$rtUrl" --user "$rtUser" --apikey "$rtApikey" "$rtId"
-
-  echo "Artifactory id=${rtId}: $(jfrog rt ping)"
-}
-
 # munge the NPM repository URL
 # @param $1 the base URL of this artifactory
 # @param $2 repository name
@@ -158,11 +141,10 @@ setupArtifactoryNpm() {
   npm config set registry "$rtNpmUrl"
 
   # there is an `npm ping` command but it just hangs if used on Artifactory so
-  # do a search and grep for `200 OK ARTIFACTORYURL` which checks that npm
-  # working AND talking to the right server. Requires verbose mode!
+  # do a search and see if it works
   npmTest=$(npm search npm --verbose 2>&1)
-
-  if echo "$npmTest" | grep "GET 200 ${rtUrl}"; then
+  result=$?
+  if [ "$result" -eq 0 ]; then
     echo "Artifactory id=${rtId}: OK"
     status=0
   else
