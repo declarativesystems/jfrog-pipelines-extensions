@@ -1,7 +1,5 @@
 artifactoryDownload() {
   local status
-  local rtId
-  rtId=$(find_step_configuration_value "sourceArtifactory")
 
   local path
   path=$(find_step_configuration_value "path")
@@ -9,9 +7,7 @@ artifactoryDownload() {
   local target
   target=$(find_step_configuration_value "target")
 
-  if [ -n "$rtId" ] && [ -n "$path" ]; then
-    setupJfrogCliRt "$rtId"
-
+  if [ -n "$path" ]; then
     if [ -z "$target" ] ; then
       target=$(basename "$path")
       echo "setting target:${target}"
@@ -32,7 +28,6 @@ artifactoryDownload() {
     fi
   else
     echo "one or more parameters missing:"
-    echo "  sourceArtifactory:${rtId}"
     echo "  path:${path}"
     echo "  target:${target}"
     status=1

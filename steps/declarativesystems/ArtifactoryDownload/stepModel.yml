@@ -1,10 +1,4 @@
 configuration:
-  # artifactory used to resolve artifacts
-  sourceArtifactory:
-    type: String
-    validate:
-      notEmpty: true
-
   # path inside artifactory to download
   path:
     type: String
